@@ -1,0 +1,7 @@
+<div class="main">
+  <app-list [list]="'playerOne'" [cardFreeze]="playerOneFreze" [cards]="playerOne" (cardIsSelected)="cardIsSelected($event)"></app-list>
+  <div class="placeholder"></div>
+  <app-list [list]="'table'" [cardFreeze]="tableFreze" [cards]="table" (cardIsSelected)="cardIsSelected($event)"></app-list>
+  <div class="placeholder"></div>
+  <app-list [list]="'playerTwo'" [cardFreeze]="playerTwoFreze" [cards]="playerTwo" (cardIsSelected)="cardIsSelected($event)"></app-list>
+</div>

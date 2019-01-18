@@ -1,0 +1,73 @@
+/* You can add global styles to this file, and also import other style files */
+/*-----Prevents iPhone from resizing in landscape mode -----*/
+html {-webkit-text-size-adjust: none; }
+
+/*----------- apply a natural box layout model to all elements --------------*/
+* { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+
+/*-----BODY -----*/
+body {
+    background-image: url('/assets/card-table.jpg');
+	font-size: 16px;
+    font-family: 'Quicksand', sans-serif;
+    /* Full height */
+    height: 100%; 
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+/*----- MAIN -----*/
+main {
+	display: block;
+	min-height: 25em;
+	h1 {
+		font-size: 3em;
+		padding-top: .75em;
+	}
+} /* end of main area */
+
+/*----- COLUMNS -----*/
+
+main {
+    .container {
+        .row {
+            content: "";
+            clear: both;
+            padding: 10% 10%;
+        }
+        .column {
+            padding: 10% 10%;
+            display: inline-block;
+        }
+    }
+} /* end of main area */
+
+@for $i from 1 through 12 {
+	$w: ($i / 12) * 100%;
+	.small-#{$i} {
+		width: $w;
+		float: left;
+	}
+}
+
+.card-img {
+    max-height: 300px;
+    max-width: 150px;
+    cursor: pointer;
+}
+
+.isSelected {
+    opacity: 0.5;
+}
+
+.isFreezed {
+    cursor: not-allowed;
+}
+
+.placeholder {
+    height:150px; 
+    width:100%; 
+    clear:both;
+}
