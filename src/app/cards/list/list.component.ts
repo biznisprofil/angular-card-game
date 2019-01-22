@@ -1,27 +1,22 @@
-import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { CardsDeck, Card } from './../cards.model';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Cards, Card } from './../cards.model';
 
 @Component({
   selector: 'app-list',
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.scss']
 })
-export class ListComponent implements OnInit {
+export class ListComponent {
 
-  @Input() cards: CardsDeck;
+  @Input() cards: Cards;
   @Input() cardFreeze: boolean;
   @Input() list: string;
   @Output() cardIsSelected = new EventEmitter<any>();
 
   constructor() { }
 
-  ngOnInit() {
-    
-    console.log('cards', this.cards)
-  }
-
-  cardSelected(value) {
-    console.log('value', value);
+  cardSelected(value:Card) {
+    // console.log('value', value);
     if (!this.cardFreeze) {
       this.cardIsSelected.emit({
         value: value,

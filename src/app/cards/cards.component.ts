@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ContractsService } from './cards.service';
-import { CardsDeck, Card } from './cards.model';
+import { Card } from './cards.model';
 
 @Component({
   selector: 'app-cards',
@@ -16,9 +16,11 @@ export class CardsComponent implements OnInit {
 
   playerOne: Card[] = new Array();
   playerOneFreze: boolean = true;
+  playerOneFinished: boolean = false;
 
   playerTwo: Card[] = new Array();
   playerTwoFreze: boolean = true;
+  playerTwoFinished: boolean = false;
 
   selectedCards: string[] = new Array();
 
@@ -28,98 +30,176 @@ export class CardsComponent implements OnInit {
   ngOnInit() {
     this.contractsService.getCards().subscribe(data => {
       this.deck = data.cards;
-      console.log('data.cards', data.cards)
+      // console.log('data.cards', data.cards)
       this.deck = this.assignCardValues(data.cards);
-      console.log('this.deck', this.deck)
+      // console.log('this.deck', this.deck)
       this.dealCards();
     });
   };
 
   assignCardValues(deck: Card[]): Card[] {
     for (let i in deck) {
-      switch (deck[i].value) {
-        case 'ACE':
-          deck[i].otherValues = ['11', '1'];
-          break;
-        case 'JACK':
-          deck[i].otherValues = ['12'];
-          break;
-        case 'QUEEN':
-          deck[i].otherValues = ['13'];
-          break;
-        case 'KING':
-          deck[i].otherValues = ['14'];
-          break;
-      }
+      deck[i].value = this.getCardValue(deck[i].value);
     }
     return deck;
   }
 
-  dealCards() {
-    this.playerOne = this.deck.splice(0, 6);
-    console.log('this.playerOne', this.playerOne)
-    this.table = this.deck.splice(0, 4);
-    console.log('this.table', this.table)
-    this.playerTwo = this.deck.splice(0, 6);
-    console.log('this.playerTwo', this.playerTwo)
-    console.log('this.deck', this.deck);
+  getCardValue(value) {
+    const values = {
+      KING: [14],
+      QUEEN: [13],
+      JACK: [12],
+      ACE: [11, 1],
+      10: [10],
+      9: [9],
+      8: [8],
+      7: [7],
+      6: [6],
+      5: [5],
+      4: [4],
+      3: [3],
+      2: [2],
+    };
+    return values[value];
   }
 
-  cardIsSelected(playerCard: any) {
-    console.log('playerCard', playerCard);
-    if (playerCard.list === 'table') {
-      for (let i in this.table) {
-        if (playerCard.value.code === this.table[i].code) {
-          this.table[i].isSelected = true;
-          this.selectedCards.push(playerCard.value);
-          this.playerOneFreze = false;
+  dealCards() {
+    this.playerOne = this.deck.splice(0, 6);
+    // console.log('this.playerOne', this.playerOne)
+    this.table = this.deck.splice(0, 4);
+    // console.log('this.table', this.table)
+    this.playerTwo = this.deck.splice(0, 6);
+    // console.log('this.playerTwo', this.playerTwo)
+  }
+
+  cardIsSelected(selectedCard: any) {
+    // console.log('selectedCard', selectedCard);
+    if (selectedCard.list === 'table') {
+      for (let card in this.table) {
+        if (selectedCard.value.code === this.table[card].code) {
+          this.table[card].isSelected = true;
+          this.selectedCards.push(selectedCard.value);
+
+          if (!this.playerOneFinished) {
+            this.playerOneFreze = false;
+          } else {
+            this.playerTwoFreze = false;
+          }
+
         }
       }
-    } else if (playerCard.list === 'playerOne') {
-      for (let i in this.playerOne) {
-        if (playerCard.value.code === this.playerOne[i].code) {
-          this.playerOne[i].isSelected = true;
-          isMoveValid(this.selectedCards, playerCard.value);
-          this.playerTwoFreze = false;
+    } else if (selectedCard.list === 'playerOne') {
+      for (let card in this.playerOne) {
+        if (selectedCard.value.code === this.playerOne[card].code) {
+          this.playerOne[card].isSelected = true;
+
+          this.playerOneFinished = true;
+          this.playerOneFreze = true;
+
+          if (isMoveValid(this.selectedCards, selectedCard.value)) {
+            this.moveIsValid();
+          } else {
+            this.moveIsNotValid();
+          }
         }
       }
     }
-    else if (playerCard.list === 'playerTwo') {
-      for (let i in this.playerTwo) {
-        if (playerCard.playerCard.code === this.playerTwo[i].code) {
-          this.playerTwo[i].isSelected = true;
+    else if (selectedCard.list === 'playerTwo') {
+      for (let card in this.playerTwo) {
+        if (selectedCard.value.code === this.playerTwo[card].code) {
+          this.playerTwo[card].isSelected = true;
+
+          this.playerTwoFinished = true;
+          this.playerOneFinished = false;
+          this.playerTwoFreze = true;
+
+          if (isMoveValid(this.selectedCards, selectedCard.value)) {
+            this.moveIsValid();
+          } else {
+            this.moveIsNotValid();
+          }
         }
       }
     }
   }
+
+  moveIsValid() {
+    console.log('move valid');
+    setTimeout(() => {
+
+      this.table = this.table.filter((item) => !item.isSelected);
+
+      // console.log('this.table', this.table)
+
+      this.playerOne = this.playerOne.filter((item) => !item.isSelected);
+
+      // console.log('this.playerOne', this.playerOne)
+
+      this.playerTwo = this.playerTwo.filter((item) => !item.isSelected);
+
+      // console.log('this.playerTwo', this.playerTwo)
+
+      this.selectedCards = new Array();
+    }, 500);
+  }
+
+  moveIsNotValid() {
+    console.log('move not valid');
+    for (let i = 0; i < this.table.length; i++) {
+      if (this.table[i].isSelected) {
+        this.table[i].isSelected = false;
+      }
+    }
+
+    for (let i = 0; i < this.playerOne.length; i++) {
+      if (this.playerOne[i].isSelected) {
+        this.playerOne[i].isSelected = false;
+      }
+    }
+
+    for (let i = 0; i < this.playerTwo.length; i++) {
+      if (this.playerTwo[i].isSelected) {
+        this.playerTwo[i].isSelected = false;
+      }
+    }
+
+    this.selectedCards = new Array();
+  }
+
 
 }
 
 const isMoveValid = (selectedCards, playerCard) => {
-  console.log('playerCard', playerCard);
-  console.log('selectedCards', selectedCards);
+  let isMoveValid: boolean = false;
+  // console.log('playerCard', playerCard);
+  // console.log('selectedCards', selectedCards);
 
-  let selectedCardsValue = [];
+  let selectedCardsValues = [];
 
-  for (let i in selectedCards) {
-    if (selectedCards[i].otherValues) {
-      selectedCardsValue.push(selectedCards[i].otherValues);
-    } else {
-      selectedCardsValue.push(selectedCards[i].value);
+  // function for giving all possible sum results on table
+  for (let i = 0; i < selectedCards.length; i++) {
+    for (let j in selectedCards[i].value) {
+      selectedCardsValues.push(selectedCards[i].value[j]);
+      if (i > 0) {
+        selectedCards[i].value.map((num: number) => {
+          selectedCardsValues.push(num + selectedCards[i - 1].value[j]);
+        });
+        selectedCards[i - 1].value.map((num: number) => {
+          selectedCardsValues.push(num + selectedCards[i].value[j]);
+        });
+      }
     }
   }
 
-  var sum = selectedCardsValue.map(Number).reduce(add, 0);
-  console.log('sum', sum);
-  // funkcija koja uporedjuje i sabira brojeve nije gotova mora da se zavrsi
-  if (playerCard.otherValues) {
-    if (sum === playerCard.otherValues[0]) {
-
+  // function for comparison pssible sum result with player card
+  for (let i in selectedCardsValues) {
+    for (let j in playerCard.value) {
+      if (selectedCardsValues[i] === playerCard.value[j]) {
+        isMoveValid = true;
+      }
     }
   }
-  
-  function add(a, b) {
-    return a + b;
-  }
+
+  return isMoveValid;
 
 }

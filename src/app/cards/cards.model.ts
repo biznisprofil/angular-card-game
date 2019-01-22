@@ -5,7 +5,7 @@ export class Deck {
     remaining: number;
 }
 
-export class CardsDeck {
+export class Cards {
     cards: any[];
     deck_id: string;
     remaining: number;

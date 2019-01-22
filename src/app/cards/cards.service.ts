@@ -4,22 +4,22 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
-import { Deck, CardsDeck } from './cards.model';
+import { Deck, Cards } from './cards.model';
 
 @Injectable()
 export class ContractsService {
 
     constructor(private http: HttpClient) { }
 
-    public getCards(): Observable<CardsDeck> {
+    public getCards(): Observable<Cards> {
 
         return this.http.get(`https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1`)
             .mergeMap((deck: Deck) => {
-                console.log('deck', deck);
+                // console.log('deck', deck);
                 return this.http.get(`https://deckofcardsapi.com/api/deck/${deck.deck_id}/draw/?count=${deck.remaining}`)
             })
-            .map((res: CardsDeck) => {
-                console.log('res', res)
+            .map((res: Cards) => {
+                // console.log('res', res)
                 return res;
             }).catch(this.handleError);
     }
