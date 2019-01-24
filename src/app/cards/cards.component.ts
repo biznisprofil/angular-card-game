@@ -95,7 +95,7 @@ export class CardsComponent implements OnInit {
               this.selectedCards.splice(i, 1);
             }
           }
-          
+
           console.log('this.selectedCards else', this.selectedCards);
 
           if (this.selectedCards.length === 0) {
@@ -116,7 +116,7 @@ export class CardsComponent implements OnInit {
           if (isMoveValid(this.selectedCards, selectedCard.value)) {
             this.moveIsValid();
           } else {
-            this.moveIsNotValid();
+            this.moveIsNotValid(selectedCard.list);
           }
         }
       }
@@ -133,7 +133,7 @@ export class CardsComponent implements OnInit {
           if (isMoveValid(this.selectedCards, selectedCard.value)) {
             this.moveIsValid();
           } else {
-            this.moveIsNotValid();
+            this.moveIsNotValid(selectedCard.list);
           }
         }
       }
@@ -160,23 +160,27 @@ export class CardsComponent implements OnInit {
     }, 500);
   }
 
-  moveIsNotValid() {
-    console.log('move not valid');
-    for (let i = 0; i < this.table.length; i++) {
-      if (this.table[i].isSelected) {
-        this.table[i].isSelected = false;
+  moveIsNotValid(list) {
+    alert('move is not valid');
+    // for (let i = 0; i < this.table.length; i++) {
+    //   if (this.table[i].isSelected) {
+    //     this.table[i].isSelected = false;
+    //   }
+    // }
+
+    if (list === 'playerOne') {
+      for (let i = 0; i < this.playerOne.length; i++) {
+        if (this.playerOne[i].isSelected) {
+          this.playerOne[i].isSelected = false;
+        }
       }
     }
 
-    for (let i = 0; i < this.playerOne.length; i++) {
-      if (this.playerOne[i].isSelected) {
-        this.playerOne[i].isSelected = false;
-      }
-    }
-
-    for (let i = 0; i < this.playerTwo.length; i++) {
-      if (this.playerTwo[i].isSelected) {
-        this.playerTwo[i].isSelected = false;
+    if (list === 'playerTwo') {
+      for (let i = 0; i < this.playerTwo.length; i++) {
+        if (this.playerTwo[i].isSelected) {
+          this.playerTwo[i].isSelected = false;
+        }
       }
     }
 
@@ -188,34 +192,83 @@ export class CardsComponent implements OnInit {
 
 const isMoveValid = (selectedCards, playerCard) => {
   let isMoveValid: boolean = false;
-  // console.log('playerCard', playerCard);
-  // console.log('selectedCards', selectedCards);
+  console.log('playerCard', playerCard);
+  console.log('selectedCards', selectedCards);
 
   let selectedCardsValues = [];
 
-  // function for giving all possible sum results on table
-  for (let i = 0; i < selectedCards.length; i++) {
-    for (let j in selectedCards[i].value) {
-      selectedCardsValues.push(selectedCards[i].value[j]);
+  let i = selectedCards.length;
+  while (i--) {
+    console.log('selectedCards[i].value', selectedCards[i].value)
+    selectedCards[i].value.forEach(element => {
+      selectedCardsValues.push(element);
+      let sum = element;
       if (i > 0) {
-        selectedCards[i].value.map((num: number) => {
-          selectedCardsValues.push(num + selectedCards[i - 1].value[j]);
-        });
-        selectedCards[i - 1].value.map((num: number) => {
-          selectedCardsValues.push(num + selectedCards[i].value[j]);
+        selectedCards[i - 1].value.forEach(otherElement => {
+          sum += otherElement;
+          selectedCardsValues.push(element + otherElement)
         });
       }
-    }
+      if (i > 1) {
+        selectedCards[i - 2].value.forEach(otherElement => {
+          sum += otherElement;
+          selectedCardsValues.push(element + otherElement)
+        });
+      }
+      if (i > 2) {
+        selectedCards[i - 3].value.forEach(otherElement => {
+          sum += otherElement;
+          selectedCardsValues.push(element + otherElement)
+        });
+      }
+
+      selectedCardsValues.push(sum);
+      console.log('sum', sum);
+
+    });
   }
 
-  // function for comparison pssible sum result with player card
-  for (let i in selectedCardsValues) {
-    for (let j in playerCard.value) {
-      if (selectedCardsValues[i] === playerCard.value[j]) {
-        isMoveValid = true;
-      }
-    }
+  function removeDuplicate(arr) {
+    let unique_array = Array.from(new Set(arr))
+    return unique_array
   }
+
+  let uniqueSelectedCardsValues = removeDuplicate(selectedCardsValues);
+  console.log('uniqueSelectedCardsValues', uniqueSelectedCardsValues);
+
+
+  const playerCardValue = playerCard.value;
+  console.log('playerCardValue', playerCardValue);
+
+  const max = Math.max.apply(null, uniqueSelectedCardsValues);
+
+  for (let j = 0; j < uniqueSelectedCardsValues.length; j++) {
+    playerCardValue.forEach(element => {
+      if (uniqueSelectedCardsValues[j] === element) {
+        isMoveValid = true;
+        uniqueSelectedCardsValues.splice(j, 1);
+      }
+    });
+  }
+
+  // var isAnyBigger = (element) => {
+  //   return element >= max;
+  // };
+
+  // if (uniqueSelectedCardsValues.some(isAnyBigger)) {
+  //   isMoveValid = false;
+  // }
+
+
+
+  // function for comparison pssible sum result with player card
+  // for (let i in selectedCardsValues) {
+  //   for (let j in playerCard.value) {
+  //     if (selectedCardsValues[i] === playerCard.value[j]) {
+  //       isMoveValid = true;
+  //     }
+  //   }
+  // }
 
   return isMoveValid;
 
