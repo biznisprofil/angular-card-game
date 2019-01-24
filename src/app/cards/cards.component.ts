@@ -22,7 +22,7 @@ export class CardsComponent implements OnInit {
   playerTwoFreze: boolean = true;
   playerTwoFinished: boolean = false;
 
-  selectedCards: string[] = new Array();
+  selectedCards: Card[] = new Array();
 
 
   constructor(private contractsService: ContractsService) { }
@@ -73,10 +73,10 @@ export class CardsComponent implements OnInit {
   }
 
   cardIsSelected(selectedCard: any) {
-    // console.log('selectedCard', selectedCard);
+    console.log('selectedCard', selectedCard);
     if (selectedCard.list === 'table') {
-      for (let card in this.table) {
-        if (selectedCard.value.code === this.table[card].code) {
+      for (let card = 0; card < this.table.length; card++) {
+        if (selectedCard.value.code === this.table[card].code && !this.table[card].isSelected) {
           this.table[card].isSelected = true;
           this.selectedCards.push(selectedCard.value);
 
@@ -84,6 +84,23 @@ export class CardsComponent implements OnInit {
             this.playerOneFreze = false;
           } else {
             this.playerTwoFreze = false;
+          }
+          console.log('this.selectedCards if', this.selectedCards);
+          // statement for unselecting the selected card
+        } else if (selectedCard.value.code === this.table[card].code && this.table[card].isSelected) {
+          this.table[card].isSelected = false;
+
+          for (let i = 0; i < this.selectedCards.length; i++) {
+            if (selectedCard.value.code === this.selectedCards[i].code) {
+              this.selectedCards.splice(i, 1);
+            }
+          }
+          
+          console.log('this.selectedCards else', this.selectedCards);
+
+          if (this.selectedCards.length === 0) {
+            this.playerOneFreze = true;
+            this.playerTwoFreze = true;
           }
 
         }
