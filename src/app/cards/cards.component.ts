@@ -98,11 +98,6 @@ export class CardsComponent implements OnInit {
 
           console.log('this.selectedCards else', this.selectedCards);
 
-          if (this.selectedCards.length === 0) {
-            this.playerOneFreze = true;
-            this.playerTwoFreze = true;
-          }
-
         }
       }
     } else if (selectedCard.list === 'playerOne') {
@@ -110,10 +105,9 @@ export class CardsComponent implements OnInit {
         if (selectedCard.value.code === this.playerOne[card].code) {
           this.playerOne[card].isSelected = true;
 
-          this.playerOneFinished = true;
-          this.playerOneFreze = true;
-
           if (isMoveValid(this.selectedCards, selectedCard.value)) {
+            this.playerOneFinished = true;
+            this.playerOneFreze = true;
             this.moveIsValid();
           } else {
             this.moveIsNotValid(selectedCard.list);
@@ -126,11 +120,10 @@ export class CardsComponent implements OnInit {
         if (selectedCard.value.code === this.playerTwo[card].code) {
           this.playerTwo[card].isSelected = true;
 
-          this.playerTwoFinished = true;
-          this.playerOneFinished = false;
-          this.playerTwoFreze = true;
-
           if (isMoveValid(this.selectedCards, selectedCard.value)) {
+            this.playerTwoFinished = true;
+            this.playerOneFinished = false;
+            this.playerTwoFreze = true;
             this.moveIsValid();
           } else {
             this.moveIsNotValid(selectedCard.list);
@@ -161,33 +154,61 @@ export class CardsComponent implements OnInit {
   }
 
   moveIsNotValid(list) {
-    alert('move is not valid');
-    // for (let i = 0; i < this.table.length; i++) {
-    //   if (this.table[i].isSelected) {
-    //     this.table[i].isSelected = false;
-    //   }
-    // }
+    var answer = confirm('Move is not valid. If you want to drop the card press ok, otherwise pres cancel and unselect the card.');
 
-    if (list === 'playerOne') {
-      for (let i = 0; i < this.playerOne.length; i++) {
-        if (this.playerOne[i].isSelected) {
-          this.playerOne[i].isSelected = false;
+    if (answer) {
+      if (list === 'playerOne') {
+        for (let i = 0; i < this.playerOne.length; i++) {
+          if (this.playerOne[i].isSelected) {
+            this.playerOne[i].isSelected = false;
+            this.table.push(this.playerOne[i]);
+            this.playerOne.splice(i, 1);
+            this.playerOneFinished = true;
+            this.playerOneFreze = true;
+          }
         }
       }
-    }
 
-    if (list === 'playerTwo') {
-      for (let i = 0; i < this.playerTwo.length; i++) {
-        if (this.playerTwo[i].isSelected) {
-          this.playerTwo[i].isSelected = false;
+      if (list === 'playerTwo') {
+        for (let i = 0; i < this.playerTwo.length; i++) {
+          if (this.playerTwo[i].isSelected) {
+            this.playerTwo[i].isSelected = false;
+            this.table.push(this.playerTwo[i]);
+            this.playerTwo.splice(i, 1);
+            this.playerTwoFinished = true;
+            this.playerTwoFreze = true;
+          }
         }
       }
-    }
 
-    this.selectedCards = new Array();
+      for (let i = 0; i < this.table.length; i++) {
+        if (this.table[i].isSelected) {
+          this.table[i].isSelected = false;
+        }
+      }
+
+      this.selectedCards = new Array();
+    }
+    else {
+      if (list === 'playerOne') {
+        for (let i = 0; i < this.playerOne.length; i++) {
+          if (this.playerOne[i].isSelected) {
+            this.playerOne[i].isSelected = false;
+          }
+        }
+        this.playerOneFreze = false;
+      }
+
+      if (list === 'playerTwo') {
+        for (let i = 0; i < this.playerTwo.length; i++) {
+          if (this.playerTwo[i].isSelected) {
+            this.playerTwo[i].isSelected = false;
+          }
+        }
+        this.playerTwoFreze = false;
+      }
+    }
   }
-
-
 }
 
 const isMoveValid = (selectedCards, playerCard) => {
