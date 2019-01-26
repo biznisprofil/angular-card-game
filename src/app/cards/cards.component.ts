@@ -100,6 +100,11 @@ export class CardsComponent implements OnInit {
 
         }
       }
+
+      if (this.selectedCards.length === 0) {
+        this.playerOneFreze = true;
+        this.playerTwoFreze = true;
+      }
     } else if (selectedCard.list === 'playerOne') {
       for (let card in this.playerOne) {
         if (selectedCard.value.code === this.playerOne[card].code) {
@@ -107,6 +112,7 @@ export class CardsComponent implements OnInit {
 
           if (isMoveValid(this.selectedCards, selectedCard.value)) {
             this.playerOneFinished = true;
+            this.playerTwoFinished = false;
             this.playerOneFreze = true;
             this.moveIsValid();
           } else {
@@ -150,11 +156,20 @@ export class CardsComponent implements OnInit {
       // console.log('this.playerTwo', this.playerTwo)
 
       this.selectedCards = new Array();
+
+      if (this.table.length === 0) {
+        if (this.playerOneFinished && !this.playerTwoFinished) {
+          this.playerTwoFreze = false;
+        }
+        if (!this.playerOneFinished && this.playerTwoFinished) {
+          this.playerOneFreze = false;
+        }
+      }
     }, 500);
   }
 
   moveIsNotValid(list) {
-    var answer = confirm('Move is not valid. If you want to drop the card press ok, otherwise pres cancel and unselect the card.');
+    var answer = confirm('Move is not valid. If you want to drop the card press ok, otherwise press cancel and unselect the card.');
 
     if (answer) {
       if (list === 'playerOne') {
@@ -176,6 +191,7 @@ export class CardsComponent implements OnInit {
             this.table.push(this.playerTwo[i]);
             this.playerTwo.splice(i, 1);
             this.playerTwoFinished = true;
+            this.playerOneFinished = false;
             this.playerTwoFreze = true;
           }
         }
@@ -215,82 +231,135 @@ const isMoveValid = (selectedCards, playerCard) => {
   let isMoveValid: boolean = false;
   console.log('playerCard', playerCard);
   console.log('selectedCards', selectedCards);
+  // if no selected cards move is not valid 
+  if (!selectedCards.length) {
+    return isMoveValid;
+  }
 
-  let selectedCardsValues = [];
+  let selectedCardsCodes = [];
+  let selectedCardsValuesAndSum = [];
 
   let i = selectedCards.length;
   while (i--) {
+    selectedCardsCodes.push(selectedCards[i].code);
     console.log('selectedCards[i].value', selectedCards[i].value)
     selectedCards[i].value.forEach(element => {
-      selectedCardsValues.push(element);
+
+      selectedCardsValuesAndSum.push(element);
       let sum = element;
       if (i > 0) {
         selectedCards[i - 1].value.forEach(otherElement => {
           sum += otherElement;
-          selectedCardsValues.push(element + otherElement)
+          selectedCardsValuesAndSum.push(element + otherElement)
         });
       }
       if (i > 1) {
         selectedCards[i - 2].value.forEach(otherElement => {
           sum += otherElement;
-          selectedCardsValues.push(element + otherElement)
+          selectedCardsValuesAndSum.push(element + otherElement)
         });
       }
       if (i > 2) {
         selectedCards[i - 3].value.forEach(otherElement => {
           sum += otherElement;
-          selectedCardsValues.push(element + otherElement)
+          selectedCardsValuesAndSum.push(element + otherElement)
         });
       }
 
-      selectedCardsValues.push(sum);
-      console.log('sum', sum);
+      selectedCardsValuesAndSum.push(sum);
 
     });
   }
 
-  function removeDuplicate(arr) {
-    let unique_array = Array.from(new Set(arr))
-    return unique_array
-  }
-
-  let uniqueSelectedCardsValues = removeDuplicate(selectedCardsValues);
-  console.log('uniqueSelectedCardsValues', uniqueSelectedCardsValues);
+  let uniqueSelectedCardsValuesAndSum = removeDuplicate(selectedCardsValuesAndSum);
+  console.log('uniqueSelectedCardsValues', uniqueSelectedCardsValuesAndSum);
 
 
   const playerCardValue = playerCard.value;
   console.log('playerCardValue', playerCardValue);
 
-  const max = Math.max.apply(null, uniqueSelectedCardsValues);
-
-  for (let j = 0; j < uniqueSelectedCardsValues.length; j++) {
+  for (let j = 0; j < uniqueSelectedCardsValuesAndSum.length; j++) {
     playerCardValue.forEach(element => {
-      if (uniqueSelectedCardsValues[j] === element) {
+      if (uniqueSelectedCardsValuesAndSum[j] === element) {
         isMoveValid = true;
-        uniqueSelectedCardsValues.splice(j, 1);
+        uniqueSelectedCardsValuesAndSum.splice(j, 1);
       }
     });
   }
 
-  // var isAnyBigger = (element) => {
-  //   return element >= max;
-  // };
+  // find biggest value from booth arrays
+  const playerCardMax = Math.max.apply(null, playerCardValue);
+  const uniqueSelectedCardsValuesMax = Math.max.apply(null, uniqueSelectedCardsValuesAndSum);
+  console.log('max', playerCardMax);
 
-  // if (uniqueSelectedCardsValues.some(isAnyBigger)) {
-  //   isMoveValid = false;
-  // }
+  // check if every item from selected cards are less than player card
+  console.log('every_result_is_smaller_than(uniqueSelectedCardsValuesAndSum, playerCardMax)', every_result_is_smaller_than(uniqueSelectedCardsValuesAndSum, playerCardMax));
+  if (!every_result_is_smaller_than(uniqueSelectedCardsValuesAndSum, playerCardMax)) {
+    isMoveValid = false;
+  }
+  // Check if selected card is equal as player card
+  if (every_item_is_equal_as(selectedCardsCodes, playerCard.code)) {
+    isMoveValid = true;
+  }
 
+  // conditon that check two sum
+  if (is_equal_like_two_sum(playerCardMax, uniqueSelectedCardsValuesMax) && selectedCards.length > 1) {
+    isMoveValid = true;
+  }
 
-
-  // function for comparison pssible sum result with player card
-  // for (let i in selectedCardsValues) {
-  //   for (let j in playerCard.value) {
-  //     if (selectedCardsValues[i] === playerCard.value[j]) {
-  //       isMoveValid = true;
-  //     }
-  //   }
-  // }
+  if (check_sum_first_and_last_cards_values(selectedCards, playerCardValue)) {
+    isMoveValid = true;
+  }
 
   return isMoveValid;
+
+}
+// functions that serve as conditions for possible scenarios - naming convetion is intentionally different than component functions
+function is_equal_like_two_sum(playerMax, selectedCardSumMax) {
+  return selectedCardSumMax / playerMax === 2;
+}
+
+function every_item_is_equal_as(arr, equalAs) {
+  return arr.every(item => item === equalAs);
+}
+
+function every_result_is_smaller_than(arr, lessThan) {
+  return arr.every(item => item < lessThan);
+}
+
+function removeDuplicate(arr: any[]) {
+  let unique_array = Array.from(new Set(arr));
+  return unique_array;
+}
+
+function check_sum_first_and_last_cards_values(selectedCards, playerCard) {
+  let conditionIsTrue = false;
+  let i = selectedCards.length;
+  let sumFirst = 0;
+  let sumLast = 0;
+  while (i--) {
+    let first = 0;
+    let last = selectedCards[i].value.length - 1;
+    sumFirst += selectedCards[i].value[first];
+    sumLast += selectedCards[i].value[last];
+    console.log('selectedCards[i].value', selectedCards[i].value);
+  }
+
+
+  console.log('playerCard', playerCard)
+
+
+  console.log('sumFirst', sumFirst)
+  console.log('sumLast', sumLast)
+  playerCard.forEach(element => {
+    if (element === sumFirst || element === sumLast) {
+      conditionIsTrue = true;
+    }
+  });
+
+
+  console.log('conditionIsTrue', conditionIsTrue);
+
+  return conditionIsTrue;
 
 }
