@@ -35,7 +35,7 @@ export class CardsComponent implements OnInit {
       // console.log('this.deck', this.deck)
       this.dealCards();
     });
-  };
+  }
 
   assignCardValues(deck: Card[]): Card[] {
     for (let i in deck) {
@@ -168,8 +168,8 @@ export class CardsComponent implements OnInit {
     }, 500);
   }
 
-  moveIsNotValid(list) {
-    var answer = confirm('Move is not valid. If you want to drop the card press ok, otherwise press cancel and unselect the card.');
+  moveIsNotValid(list:string) {
+    let answer = confirm('Move is not valid. If you want to drop the card press ok, otherwise press cancel and unselect the card.');
 
     if (answer) {
       if (list === 'playerOne') {
@@ -240,6 +240,7 @@ const isMoveValid = (selectedCards, playerCard) => {
   let selectedCardsValuesAndSum = [];
 
   let i = selectedCards.length;
+  // summing each with eachother element in table and gives all possible combinations of summ 
   while (i--) {
     selectedCardsCodes.push(selectedCards[i].code);
     console.log('selectedCards[i].value', selectedCards[i].value)
@@ -297,16 +298,20 @@ const isMoveValid = (selectedCards, playerCard) => {
   if (!every_result_is_smaller_than(uniqueSelectedCardsValuesAndSum, playerCardMax)) {
     isMoveValid = false;
   }
-  // Check if selected card is equal as player card
+
+  // Check if selected cards are equal as player card
+  console.log('every_item_is_equal_as(selectedCardsCodes, playerCard.code)', every_item_is_equal_as(selectedCardsCodes, playerCard.code))
   if (every_item_is_equal_as(selectedCardsCodes, playerCard.code)) {
     isMoveValid = true;
   }
 
-  // conditon that check two sum
+  // conditon check that player card is equal like two sum
+  console.log('is_equal_like_two_sum(playerCardMax, uniqueSelectedCardsValuesMax)', is_equal_like_two_sum(playerCardMax, uniqueSelectedCardsValuesMax))
   if (is_equal_like_two_sum(playerCardMax, uniqueSelectedCardsValuesMax) && selectedCards.length > 1) {
     isMoveValid = true;
   }
 
+  console.log('check_sum_first_and_last_cards_values(selectedCards, playerCardValue)', check_sum_first_and_last_cards_values(selectedCards, playerCardValue))
   if (check_sum_first_and_last_cards_values(selectedCards, playerCardValue)) {
     isMoveValid = true;
   }
@@ -314,7 +319,7 @@ const isMoveValid = (selectedCards, playerCard) => {
   return isMoveValid;
 
 }
-// functions that serve as conditions for possible scenarios - naming convetion is intentionally different than component functions
+// functions that serve as conditions for possible scenarios
 function is_equal_like_two_sum(playerMax, selectedCardSumMax) {
   return selectedCardSumMax / playerMax === 2;
 }
@@ -345,9 +350,7 @@ function check_sum_first_and_last_cards_values(selectedCards, playerCard) {
     console.log('selectedCards[i].value', selectedCards[i].value);
   }
 
-
   console.log('playerCard', playerCard)
-
 
   console.log('sumFirst', sumFirst)
   console.log('sumLast', sumLast)
@@ -357,9 +360,7 @@ function check_sum_first_and_last_cards_values(selectedCards, playerCard) {
     }
   });
 
-
   console.log('conditionIsTrue', conditionIsTrue);
 
   return conditionIsTrue;
-
 }
